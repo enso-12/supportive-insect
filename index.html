@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1B1040">
+<title>Supportive Insect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0F0A28;
+    --bg-mid: #1B1040;
+    --bg-top: #2D1B69;
+    --purple-light: #C4B0F0;
+    --purple-mid: #9B7FD4;
+    --purple-dim: #6B5A8E;
+    --purple-faint: rgba(155,127,212,0.15);
+    --glass: rgba(255,255,255,0.07);
+    --glass-border: rgba(255,255,255,0.12);
+    --glass-strong: rgba(255,255,255,0.11);
+    --text: #EDE6FF;
+    --text-mid: #C4B8E0;
+    --text-dim: #8878A8;
+    --text-faint: rgba(255,255,255,0.2);
+    --accent: #D4A0F0;
+    --accent-warm: #F0C0D8;
+    --accent-glow: rgba(212,160,240,0.25);
+    --moon: #F0E8C8;
+  }
+
+  * { margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent; }
+
+  body {
+    font-family:'Nunito','Zen Maru Gothic',sans-serif;
+    background:var(--bg-deep);
+    color:var(--text);
+    min-height:100vh;min-height:100dvh;
+    overflow-x:hidden;
+    user-select:none;
+  }
+
+  /* === Sky gradient === */
+  .sky {
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    background:linear-gradient(170deg, var(--bg-top) 0%, var(--bg-mid) 35%, var(--bg-deep) 100%);
+    z-index:0;
+  }
+
+  /* === Stars - 3 layers for depth === */
+  .stars-layer { position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1; }
+
+  .star {
+    position:absolute;
+    background:#fff;
+    border-radius:50%;
+  }
+  .star--sm { animation:twinkle1 3s ease-in-out infinite alternate; }
+  .star--md { animation:twinkle2 4s ease-in-out infinite alternate; }
+  .star--lg { animation:twinkle3 2.5s ease-in-out infinite alternate; box-shadow:0 0 4px rgba(255,255,255,0.4); }
+
+  @keyframes twinkle1 { 0%{opacity:0.1;} 100%{opacity:0.45;} }
+  @keyframes twinkle2 { 0%{opacity:0.15;} 100%{opacity:0.65;} }
+  @keyframes twinkle3 { 0%{opacity:0.3;} 100%{opacity:0.9;} }
+
+  /* === Moon === */
+  .moon {
+    position:fixed;
+    top:60px; right:40px;
+    width:48px; height:48px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, var(--moon), #D8D0A8);
+    box-shadow: 0 0 30px rgba(240,232,200,0.15), 0 0 60px rgba(240,232,200,0.08);
+    z-index:2;
+  }
+  .moon::after {
+    content:'';position:absolute;
+    top:8px;left:12px;
+    width:14px;height:14px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(200,190,150,0.3), transparent);
+  }
+
+  /* === Decorative clouds === */
+  .cloud {
+    position:fixed; z-index:2; pointer-events:none;
+    border-radius:50%;
+    background:radial-gradient(ellipse, rgba(155,127,212,0.06), transparent);
+  }
+
+  /* === App container === */
+  .app {
+    position:relative;z-index:3;
+    max-width:420px;margin:0 auto;
+    padding:24px 20px 100px;
+    min-height:100vh;
+  }
+
+  /* === Header === */
+  .header { display:flex;justify-content:space-between;align-items:center;margin-bottom:20px; }
+
+  .day-badge {
+    font-size:12px;font-weight:700;
+    color:var(--accent);
+    background:var(--accent-glow);
+    padding:6px 16px;border-radius:20px;
+    letter-spacing:0.3px;
+    backdrop-filter:blur(8px);
+    border:1px solid rgba(212,160,240,0.15);
+  }
+
+  .lang-sw {
+    display:flex;gap:2px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    border-radius:14px;padding:3px;
+    backdrop-filter:blur(10px);
+  }
+  .lang-btn {
+    border:none;background:transparent;
+    font-family:inherit;font-size:11px;font-weight:700;
+    color:var(--text-dim);padding:5px 11px;border-radius:12px;
+    cursor:pointer;transition:all 0.25s;
+  }
+  .lang-btn.active { background:var(--accent);color:var(--bg-deep); }
+
+  /* === Bug area === */
+  .bug-area { display:flex;flex-direction:column;align-items:center;padding:8px 0 16px; }
+
+  /* === Speech bubble - glassmorphism === */
+  .speech-bubble {
+    background:var(--glass-strong);
+    backdrop-filter:blur(16px);
+    border:1px solid var(--glass-border);
+    border-radius:24px;
+    padding:18px 26px;
+    margin-bottom:26px;
+    text-align:center;
+    font-size:15px;font-weight:600;
+    line-height:1.75;
+    max-width:290px;min-height:54px;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+    animation:bubbleIn 0.5s ease-out;
+    box-shadow:0 8px 32px rgba(0,0,0,0.15);
+  }
+  .speech-bubble::after {
+    content:'';position:absolute;
+    bottom:-8px;left:50%;
+    transform:translateX(-50%) rotate(45deg);
+    width:14px;height:14px;
+    background:var(--glass-strong);
+    border-right:1px solid var(--glass-border);
+    border-bottom:1px solid var(--glass-border);
+  }
+  @keyframes bubbleIn {
+    0%{opacity:0;transform:scale(0.92) translateY(8px);}
+    100%{opacity:1;transform:scale(1) translateY(0);}
+  }
+
+  /* === Bug === */
+  .bug-wrap {
+    cursor:pointer;
+    animation:bugFloat 4s ease-in-out infinite;
+    transition:transform 0.15s;
+    filter:drop-shadow(0 12px 24px rgba(0,0,0,0.3));
+  }
+  .bug-wrap:active { transform:scale(0.92); }
+  @keyframes bugFloat {
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-10px);}
+  }
+
+  /* Ground glow */
+  .ground-glow {
+    width:120px;height:24px;
+    background:radial-gradient(ellipse, rgba(155,127,212,0.12), transparent);
+    border-radius:50%;margin:4px auto 0;
+    animation:glowP 4s ease-in-out infinite;
+  }
+  @keyframes glowP {
+    0%,100%{transform:scaleX(1);opacity:0.7;}
+    50%{transform:scaleX(0.75);opacity:0.35;}
+  }
+
+  .tap-hint {
+    font-size:11px;color:var(--text-faint);
+    margin-top:14px;letter-spacing:0.5px;
+    animation:hintP 3s ease-in-out infinite;
+  }
+  @keyframes hintP { 0%,100%{opacity:0.3;} 50%{opacity:0.65;} }
+
+  /* === Mood === */
+  .section-title {
+    font-size:13px;font-weight:700;
+    color:var(--text-dim);margin-bottom:14px;
+    letter-spacing:0.5px;
+  }
+
+  .mood-row { display:flex;gap:8px;justify-content:center;margin-bottom:22px;flex-wrap:wrap; }
+
+  .mood-btn {
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    border:1.5px solid var(--glass-border);
+    background:var(--glass);
+    backdrop-filter:blur(10px);
+    border-radius:18px;padding:14px 11px;min-width:62px;
+    cursor:pointer;font-family:inherit;
+    transition:all 0.25s;
+  }
+  .mood-btn:hover {
+    background:var(--glass-strong);
+    transform:translateY(-2px);
+    box-shadow:0 6px 20px rgba(0,0,0,0.15);
+  }
+  .mood-btn.selected {
+    border-color:var(--accent);
+    background:var(--accent-glow);
+    transform:translateY(-2px);
+    box-shadow:0 4px 20px var(--accent-glow);
+  }
+  .mood-emoji { font-size:26px;line-height:1; }
+  .mood-label { font-size:10px;font-weight:700;color:var(--text-dim); }
+  .mood-btn.selected .mood-label { color:var(--accent); }
+
+  /* === Journal - glass card === */
+  .journal-card {
+    background:var(--glass-strong);
+    backdrop-filter:blur(16px);
+    border:1px solid var(--glass-border);
+    border-radius:22px;padding:18px;
+    margin-bottom:16px;display:none;
+    animation:fadeUp 0.35s ease-out;
+    box-shadow:0 8px 32px rgba(0,0,0,0.12);
+  }
+  .journal-card.show { display:block; }
+  @keyframes fadeUp {
+    0%{opacity:0;transform:translateY(12px);}
+    100%{opacity:1;transform:translateY(0);}
+  }
+
+  .journal-textarea {
+    width:100%;border:none;outline:none;resize:none;
+    font-family:inherit;font-size:14px;
+    color:var(--text);background:transparent;
+    line-height:1.9;min-height:80px;
+  }
+  .journal-textarea::placeholder { color:var(--text-dim); }
+
+  .journal-footer {
+    display:flex;justify-content:space-between;align-items:center;
+    margin-top:10px;padding-top:12px;
+    border-top:1px solid var(--glass-border);
+  }
+  .char-count { font-size:11px;color:var(--text-dim);font-variant-numeric:tabular-nums; }
+
+  .save-btn {
+    border:none;
+    background:linear-gradient(135deg, var(--accent), var(--purple-mid));
+    color:var(--bg-deep);
+    font-family:inherit;font-size:13px;font-weight:700;
+    padding:8px 24px;border-radius:14px;cursor:pointer;
+    transition:all 0.2s;
+    box-shadow:0 4px 16px var(--accent-glow);
+  }
+  .save-btn:active { transform:scale(0.95); }
+
+  /* === Today entry === */
+  .today-entry {
+    background:var(--glass-strong);
+    backdrop-filter:blur(16px);
+    border:1px solid var(--glass-border);
+    border-radius:22px;padding:18px 20px;
+    margin-bottom:16px;display:none;
+    animation:fadeUp 0.35s ease-out;
+    box-shadow:0 8px 32px rgba(0,0,0,0.12);
+  }
+  .today-entry.show { display:block; }
+  .today-hdr { display:flex;align-items:center;gap:10px;margin-bottom:10px; }
+  .today-mood { font-size:22px; }
+  .today-date { font-size:12px;font-weight:600;color:var(--text-dim); }
+  .today-text { font-size:14px;line-height:1.8;color:var(--text-mid); }
+  .edit-btn {
+    border:none;background:none;font-family:inherit;
+    font-size:11px;font-weight:700;color:var(--accent);
+    cursor:pointer;padding:4px 0;margin-top:8px;
+  }
+
+  /* === Calendar === */
+  .calendar-section { margin-top:8px; }
+
+  .cal-card {
+    background:var(--glass-strong);
+    backdrop-filter:blur(16px);
+    border:1px solid var(--glass-border);
+    border-radius:22px;padding:18px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  .cal-header {
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:16px;
+  }
+
+  .cal-month {
+    font-size:15px;font-weight:700;color:var(--text);
+    letter-spacing:0.3px;
+  }
+
+  .cal-nav {
+    display:flex;gap:6px;
+  }
+
+  .cal-nav-btn {
+    border:none;background:var(--glass);
+    border:1px solid var(--glass-border);
+    color:var(--text-mid);
+    width:32px;height:32px;border-radius:10px;
+    cursor:pointer;font-size:14px;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;
+    transition:all 0.2s;
+  }
+  .cal-nav-btn:hover { background:var(--glass-strong); }
+  .cal-nav-btn:active { transform:scale(0.92); }
+
+  .cal-weekdays {
+    display:grid;grid-template-columns:repeat(7,1fr);
+    gap:2px;margin-bottom:6px;
+  }
+
+  .cal-wd {
+    text-align:center;font-size:10px;font-weight:700;
+    color:var(--text-dim);padding:4px 0;
+    letter-spacing:0.5px;
+  }
+
+  .cal-grid {
+    display:grid;grid-template-columns:repeat(7,1fr);
+    gap:3px;
+  }
+
+  .cal-day {
+    aspect-ratio:1;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    border-radius:12px;
+    cursor:pointer;
+    transition:all 0.2s;
+    position:relative;
+    gap:1px;
+    border:1.5px solid transparent;
+  }
+
+  .cal-day:not(.cal-day--empty):hover {
+    background:var(--glass);
+  }
+
+  .cal-day--today {
+    border-color:var(--accent) !important;
+    background:var(--accent-glow) !important;
+  }
+
+  .cal-day--has-entry { cursor:pointer; }
+
+  .cal-day--selected {
+    background:var(--purple-faint) !important;
+    border-color:var(--purple-mid) !important;
+  }
+
+  .cal-day-num {
+    font-size:11px;font-weight:600;
+    color:var(--text-mid);
+    line-height:1;
+  }
+
+  .cal-day--today .cal-day-num { color:var(--accent); }
+
+  .cal-day--future .cal-day-num { color:var(--text-dim);opacity:0.4; }
+
+  .cal-day-emoji {
+    font-size:14px;line-height:1;
+    margin-top:1px;
+  }
+
+  /* Calendar detail popup */
+  .cal-detail {
+    margin-top:12px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    border-radius:16px;
+    padding:14px 16px;
+    display:none;
+    animation:fadeUp 0.3s ease-out;
+  }
+  .cal-detail.show { display:block; }
+
+  .cal-detail-hdr {
+    display:flex;align-items:center;gap:8px;
+    margin-bottom:8px;
+  }
+  .cal-detail-emoji { font-size:20px; }
+  .cal-detail-date { font-size:12px;font-weight:600;color:var(--text-dim); }
+  .cal-detail-text {
+    font-size:13px;line-height:1.7;color:var(--text-mid);
+  }
+  .cal-detail-empty {
+    font-size:12px;color:var(--text-dim);
+    font-style:italic;
+  }
+
+  /* === Toast === */
+  .toast {
+    position:fixed;bottom:30px;left:50%;
+    transform:translateX(-50%) translateY(80px);
+    background:var(--accent);color:var(--bg-deep);
+    padding:10px 24px;border-radius:14px;
+    font-size:13px;font-weight:700;
+    box-shadow:0 4px 24px var(--accent-glow);
+    transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    z-index:100;pointer-events:none;
+  }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  /* === Click particles === */
+  .click-p {
+    position:fixed;pointer-events:none;z-index:50;
+    font-size:14px;
+    animation:pUp 1.4s ease-out forwards;
+  }
+  @keyframes pUp {
+    0%{opacity:1;transform:scale(0.5) translateY(0) rotate(0deg);}
+    100%{opacity:0;transform:scale(1) translateY(-65px) rotate(15deg);}
+  }
+
+  /* === Small decorative stars (SVG-based) === */
+  .deco-star {
+    position:fixed;pointer-events:none;z-index:2;
+    opacity:0.4;
+  }
+</style>
+</head>
+<body>
+
+<!-- Sky background -->
+<div class="sky"></div>
+
+<!-- Star layers -->
+<div class="stars-layer" id="starsBack"></div>
+<div class="stars-layer" id="starsMid"></div>
+<div class="stars-layer" id="starsFront"></div>
+
+<!-- Moon -->
+<div class="moon"></div>
+
+<!-- Decorative clouds -->
+<div class="cloud" style="width:300px;height:120px;top:15%;left:-40px;"></div>
+<div class="cloud" style="width:200px;height:80px;top:55%;right:-30px;"></div>
+<div class="cloud" style="width:250px;height:100px;bottom:10%;left:20%;"></div>
+
+<!-- Decorative small stars -->
+<svg class="deco-star" style="top:12%;left:15%;width:12px;height:12px;" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.8 5.6 21.2 8 14 2 9.2h7.6z" fill="rgba(240,232,200,0.6)"/></svg>
+<svg class="deco-star" style="top:28%;right:18%;width:8px;height:8px;opacity:0.25;" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.8 5.6 21.2 8 14 2 9.2h7.6z" fill="rgba(212,160,240,0.8)"/></svg>
+<svg class="deco-star" style="top:45%;left:8%;width:10px;height:10px;opacity:0.3;" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.8 5.6 21.2 8 14 2 9.2h7.6z" fill="rgba(255,255,255,0.5)"/></svg>
+
+<div class="app">
+  <div class="header">
+    <div class="day-badge" id="dayCount"></div>
+    <div class="lang-sw">
+      <button class="lang-btn active" data-lang="zh" onclick="setLang('zh')">中</button>
+      <button class="lang-btn" data-lang="ja" onclick="setLang('ja')">日</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+
+  <div class="bug-area">
+    <div class="speech-bubble" id="speechBubble"></div>
+    <div class="bug-wrap" onclick="onBugTap(event)">
+      <svg width="130" height="120" viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg">
+        <!-- Glow behind bug -->
+        <ellipse cx="70" cy="80" rx="50" ry="40" fill="rgba(155,127,212,0.08)"/>
+        <!-- Antennae -->
+        <line x1="52" y1="30" x2="40" y2="8" stroke="#C4B0F0" stroke-width="2" stroke-linecap="round">
+          <animateTransform attributeName="transform" type="rotate" values="-3,52,30;3,52,30;-3,52,30" dur="2.5s" repeatCount="indefinite"/>
+        </line>
+        <circle cx="40" cy="8" r="4.5" fill="#D4A0F0" opacity="0.85">
+          <animateTransform attributeName="transform" type="rotate" values="-3,52,30;3,52,30;-3,52,30" dur="2.5s" repeatCount="indefinite"/>
+        </circle>
+        <line x1="88" y1="30" x2="100" y2="8" stroke="#C4B0F0" stroke-width="2" stroke-linecap="round">
+          <animateTransform attributeName="transform" type="rotate" values="3,88,30;-3,88,30;3,88,30" dur="2.8s" repeatCount="indefinite"/>
+        </line>
+        <circle cx="100" cy="8" r="4.5" fill="#D4A0F0" opacity="0.85">
+          <animateTransform attributeName="transform" type="rotate" values="3,88,30;-3,88,30;3,88,30" dur="2.8s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Wings -->
+        <ellipse cx="28" cy="68" rx="16" ry="26" fill="rgba(196,176,240,0.08)" transform="rotate(-12,28,68)">
+          <animate attributeName="rx" values="16;13.5;16" dur="0.25s" repeatCount="indefinite"/>
+        </ellipse>
+        <ellipse cx="112" cy="68" rx="16" ry="26" fill="rgba(196,176,240,0.08)" transform="rotate(12,112,68)">
+          <animate attributeName="rx" values="16;13.5;16" dur="0.25s" repeatCount="indefinite"/>
+        </ellipse>
+        <!-- Legs -->
+        <g stroke="#4A3868" stroke-width="2" stroke-linecap="round">
+          <line x1="36" y1="80" x2="24" y2="92"><animate attributeName="y2" values="92;89;92" dur="1.3s" repeatCount="indefinite"/></line>
+          <line x1="33" y1="93" x2="20" y2="107"><animate attributeName="y2" values="107;104;107" dur="1.5s" repeatCount="indefinite"/></line>
+          <line x1="104" y1="80" x2="116" y2="92"><animate attributeName="y2" values="92;89;92" dur="1.4s" repeatCount="indefinite"/></line>
+          <line x1="107" y1="93" x2="120" y2="107"><animate attributeName="y2" values="107;104;107" dur="1.2s" repeatCount="indefinite"/></line>
+        </g>
+        <!-- Body - purple-ish red -->
+        <ellipse cx="70" cy="82" rx="38" ry="32" fill="#C85A6A"/>
+        <ellipse cx="62" cy="73" rx="16" ry="10" fill="#D87888" opacity="0.3"/>
+        <line x1="70" y1="54" x2="70" y2="114" stroke="#A84858" stroke-width="1.5" opacity="0.7"/>
+        <circle cx="54" cy="72" r="6" fill="#A84858" opacity="0.6"/>
+        <circle cx="86" cy="72" r="6" fill="#A84858" opacity="0.6"/>
+        <circle cx="56" cy="94" r="4.5" fill="#A84858" opacity="0.6"/>
+        <circle cx="84" cy="94" r="4.5" fill="#A84858" opacity="0.6"/>
+        <circle cx="70" cy="65" r="3.5" fill="#A84858" opacity="0.6"/>
+        <!-- Head -->
+        <ellipse cx="70" cy="40" rx="21" ry="19" fill="#3A2850"/>
+        <!-- Eyes -->
+        <ellipse cx="60" cy="37" rx="7" ry="8.5" fill="#F0E8FF"/>
+        <ellipse cx="80" cy="37" rx="7" ry="8.5" fill="#F0E8FF"/>
+        <ellipse cx="61" cy="38" rx="4" ry="4.8" fill="#1B1040">
+          <animate attributeName="cx" values="61;63;61" dur="4.5s" repeatCount="indefinite"/>
+        </ellipse>
+        <ellipse cx="81" cy="38" rx="4" ry="4.8" fill="#1B1040">
+          <animate attributeName="cx" values="81;83;81" dur="4.5s" repeatCount="indefinite"/>
+        </ellipse>
+        <!-- Eye shine -->
+        <circle cx="58.5" cy="35" r="2" fill="white" opacity="0.9"/>
+        <circle cx="78.5" cy="35" r="2" fill="white" opacity="0.9"/>
+        <!-- Blush -->
+        <ellipse cx="51" cy="46" rx="5.5" ry="3" fill="#F0A0B8" opacity="0.35"/>
+        <ellipse cx="89" cy="46" rx="5.5" ry="3" fill="#F0A0B8" opacity="0.35"/>
+        <!-- Smile -->
+        <path d="M62 47 Q70 53 78 47" fill="none" stroke="#F0A0B8" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+      </svg>
+    </div>
+    <div class="ground-glow"></div>
+    <div class="tap-hint" id="tapHint"></div>
+  </div>
+
+  <div class="section-title" id="moodLabel"></div>
+  <div class="mood-row">
+    <button class="mood-btn" data-mood="happy" onclick="selectMood('happy')"><span class="mood-emoji">😊</span><span class="mood-label" data-i18n="mood_happy"></span></button>
+    <button class="mood-btn" data-mood="okay" onclick="selectMood('okay')"><span class="mood-emoji">😐</span><span class="mood-label" data-i18n="mood_okay"></span></button>
+    <button class="mood-btn" data-mood="tired" onclick="selectMood('tired')"><span class="mood-emoji">😮‍💨</span><span class="mood-label" data-i18n="mood_tired"></span></button>
+    <button class="mood-btn" data-mood="sad" onclick="selectMood('sad')"><span class="mood-emoji">😢</span><span class="mood-label" data-i18n="mood_sad"></span></button>
+    <button class="mood-btn" data-mood="angry" onclick="selectMood('angry')"><span class="mood-emoji">😤</span><span class="mood-label" data-i18n="mood_angry"></span></button>
+  </div>
+
+  <div class="journal-card" id="journalCard">
+    <textarea class="journal-textarea" id="journalText" maxlength="300" oninput="updateCC()"></textarea>
+    <div class="journal-footer">
+      <span class="char-count" id="charCount">0 / 300</span>
+      <button class="save-btn" id="saveBtn" onclick="saveEntry()"></button>
+    </div>
+  </div>
+
+  <div class="today-entry" id="todayEntry">
+    <div class="today-hdr">
+      <span class="today-mood" id="todayMoodE"></span>
+      <span class="today-date" id="todayDate"></span>
+    </div>
+    <div class="today-text" id="todayText"></div>
+    <button class="edit-btn" id="editBtn" onclick="editEntry()"></button>
+  </div>
+
+  <!-- Calendar -->
+  <div class="calendar-section">
+    <div class="section-title" id="calTitle"></div>
+    <div class="cal-card">
+      <div class="cal-header">
+        <span class="cal-month" id="calMonth"></span>
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+          <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+        </div>
+      </div>
+      <div class="cal-weekdays" id="calWeekdays"></div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-detail" id="calDetail">
+        <div class="cal-detail-hdr">
+          <span class="cal-detail-emoji" id="calDetailEmoji"></span>
+          <span class="cal-detail-date" id="calDetailDate"></span>
+        </div>
+        <div class="cal-detail-text" id="calDetailText"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Stars generation - 3 layers for depth
+function makeStars(container, count, sizeRange, cls) {
+  const el = document.getElementById(container);
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    s.className = 'star ' + cls;
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.animationDelay = (Math.random() * 5) + 's';
+    s.style.animationDuration = (2 + Math.random() * 4) + 's';
+    const sz = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
+    s.style.width = sz + 'px';
+    s.style.height = sz + 'px';
+    el.appendChild(s);
+  }
+}
+makeStars('starsBack', 50, [0.8, 1.5], 'star--sm');
+makeStars('starsMid', 30, [1.5, 2.5], 'star--md');
+makeStars('starsFront', 12, [2, 3.5], 'star--lg');
+
+// === i18n ===
+const i18n={
+zh:{
+  day_count:'陪伴第 {n} 天',tap_hint:'点一点它，它有话跟你说',
+  mood_label:'今天的心情',
+  mood_happy:'开心',mood_okay:'还行',mood_tired:'好累',mood_sad:'难过',mood_angry:'烦躁',
+  journal_placeholder:'想写点什么...',save:'保存',saved:'已保存 ✓',edit:'重新写',
+  default_greeting:'嘿，今天还好吗？',
+  cal_title:'心情日历',
+  cal_weekdays:['一','二','三','四','五','六','日'],
+  cal_months:['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+  cal_no_entry:'这天没有记录',
+  messages:{
+    happy:['开心的日子要记住','看到你笑我也放心了','今天有什么好事？','把好心情存起来，以后用','你开心就好','值得高兴的一天'],
+    okay:['还行就很好了','平淡也是一种幸福','不好不坏，刚刚好','稳稳的一天','能撑到现在就很厉害了'],
+    tired:['辛苦了','累了就歇歇','你不是机器','早点休息','今天也努力了','慢下来也没关系'],
+    sad:['不开心的时候不用假装','我在','会过去的','哭一哭也行','不用一个人扛','明天会不一样'],
+    angry:['生气说明你在乎','深呼吸','不用忍着','气完了喝口水','你的感受是合理的','烦就烦吧'],
+    general:['今天也要好好的','你已经很棒了','慢慢来','记得吃饭喝水','我一直在','不用完美，够好就行','无论如何，我都在这里']
+  }
+},
+ja:{
+  day_count:'一緒に {n} 日目',tap_hint:'タップしてみてね',
+  mood_label:'今日の気分',
+  mood_happy:'嬉しい',mood_okay:'まあまあ',mood_tired:'疲れた',mood_sad:'悲しい',mood_angry:'イライラ',
+  journal_placeholder:'何か書きたいことある？',save:'保存',saved:'保存した ✓',edit:'書き直す',
+  default_greeting:'ねえ、今日はどうだった？',
+  cal_title:'気分カレンダー',
+  cal_weekdays:['月','火','水','木','金','土','日'],
+  cal_months:['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+  cal_no_entry:'この日は記録なし',
+  messages:{
+    happy:['その笑顔が一番','いいことあった？','嬉しいね','この気持ち大事にしてね'],
+    okay:['まあまあでも十分','普通の日も大事','ぼちぼちでいい','無理しないで'],
+    tired:['お疲れさま','休んでいいよ','ゆっくりしてね','頑張りすぎないで','今日もよく頑張った'],
+    sad:['泣いていいよ','そばにいるよ','明日はきっと違う','一人じゃないよ','つらかったね'],
+    angry:['イライラするよね','深呼吸してみて','我慢しなくていい','落ち着いたらお水飲んで'],
+    general:['今日もいい一日に','十分頑張ってる','無理しないで','ここにいるよ','いつでもそばにいるよ']
+  }
+},
+en:{
+  day_count:'Day {n} together',tap_hint:'Tap it — it has something to say',
+  mood_label:"Today's mood",
+  mood_happy:'Happy',mood_okay:'Okay',mood_tired:'Tired',mood_sad:'Sad',mood_angry:'Upset',
+  journal_placeholder:'Anything on your mind...',save:'Save',saved:'Saved ✓',edit:'Rewrite',
+  default_greeting:"Hey, how's today?",
+  cal_title:'Mood calendar',
+  cal_weekdays:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+  cal_months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  cal_no_entry:'No entry for this day',
+  messages:{
+    happy:['Hold onto this feeling','Good days are worth remembering','You deserve this',"That's great"],
+    okay:["Okay is enough","Not every day has to be great","Steady is good","You're doing fine"],
+    tired:["Rest now","You've done enough","It's okay to slow down","The world can wait","You worked hard today"],
+    sad:["I'm here","It'll pass","You don't have to carry this alone","Tomorrow will be different","Let it out"],
+    angry:["Your feelings are valid","Breathe","You don't have to hold it in","Have some water when you're ready"],
+    general:["You're doing great","One step at a time","I'm here","Be gentle with yourself","You matter"]
+  }
+}};
+
+let lang=localStorage.getItem('si_lang')||'zh',mood=null,lastI=-1;
+
+function todayK(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function dayCount(){let f=localStorage.getItem('si_first_day');if(!f){f=todayK();localStorage.setItem('si_first_day',f);}return Math.floor((new Date(todayK())-new Date(f))/864e5)+1;}
+function t(k){return i18n[lang][k]||k;}
+
+function setLang(l){
+  lang=l;localStorage.setItem('si_lang',l);
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===l));
+  updateUI();
+}
+
+function updateUI(){
+  document.getElementById('dayCount').textContent=t('day_count').replace('{n}',dayCount());
+  document.getElementById('tapHint').textContent=t('tap_hint');
+  document.getElementById('moodLabel').textContent=t('mood_label');
+  document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n));
+  document.getElementById('journalText').placeholder=t('journal_placeholder');
+  document.getElementById('saveBtn').textContent=t('save');
+  document.getElementById('editBtn').textContent=t('edit');
+  const s=getEntry();
+  if(s&&s.mood)showMsg(s.mood);
+  else document.getElementById('speechBubble').textContent=t('default_greeting');
+  loadState();
+  if(typeof renderCal==='function') renderCal();
+}
+
+function randMsg(m){
+  const ms=i18n[lang].messages[m||'general'];
+  let i;do{i=Math.floor(Math.random()*ms.length);}while(i===lastI&&ms.length>1);
+  lastI=i;return ms[i];
+}
+
+function showMsg(m){
+  const b=document.getElementById('speechBubble');
+  b.style.opacity='0';
+  setTimeout(()=>{
+    b.textContent=randMsg(m);
+    b.style.opacity='1';
+    b.style.animation='none';b.offsetHeight;
+    b.style.animation='bubbleIn 0.5s ease-out';
+  },180);
+}
+
+function onBugTap(e){
+  showMsg(mood);
+  const r=e.currentTarget.getBoundingClientRect();
+  const ems=['✨','🌙','💜','⭐','🐞'];
+  for(let i=0;i<3;i++){
+    setTimeout(()=>{
+      const h=document.createElement('div');
+      h.className='click-p';
+      h.textContent=ems[Math.floor(Math.random()*ems.length)];
+      h.style.left=(r.left+r.width*0.2+Math.random()*r.width*0.6)+'px';
+      h.style.top=(r.top+Math.random()*15)+'px';
+      document.body.appendChild(h);
+      setTimeout(()=>h.remove(),1400);
+    },i*120);
+  }
+}
+
+function selectMood(m){
+  mood=m;
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',b.dataset.mood===m));
+  showMsg(m);
+  const jc=document.getElementById('journalCard');
+  jc.classList.add('show');
+  jc.style.animation='none';jc.offsetHeight;
+  jc.style.animation='fadeUp 0.35s ease-out';
+  document.getElementById('todayEntry').classList.remove('show');
+}
+
+function updateCC(){
+  document.getElementById('charCount').textContent=`${document.getElementById('journalText').value.length} / 300`;
+}
+
+function saveEntry(){
+  const text=document.getElementById('journalText').value;
+  const entry={mood,text,date:todayK(),ts:Date.now()};
+  const entries=JSON.parse(localStorage.getItem('si_entries')||'{}');
+  entries[todayK()]=entry;
+  localStorage.setItem('si_entries',JSON.stringify(entries));
+  showToast(t('saved'));
+  document.getElementById('journalCard').classList.remove('show');
+  showEntry(entry);
+  renderCal();
+}
+
+function getEntry(){return(JSON.parse(localStorage.getItem('si_entries')||'{}'))[todayK()]||null;}
+
+function showEntry(e){
+  const emos={happy:'😊',okay:'😐',tired:'😮‍💨',sad:'😢',angry:'😤'};
+  document.getElementById('todayMoodE').textContent=emos[e.mood]||'';
+  document.getElementById('todayDate').textContent=e.date;
+  document.getElementById('todayText').textContent=e.text||'';
+  document.getElementById('todayEntry').classList.add('show');
+}
+
+function editEntry(){
+  const e=getEntry();if(!e)return;
+  mood=e.mood;
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',b.dataset.mood===e.mood));
+  document.getElementById('journalText').value=e.text||'';
+  updateCC();
+  document.getElementById('journalCard').classList.add('show');
+  document.getElementById('todayEntry').classList.remove('show');
+}
+
+function loadState(){
+  const e=getEntry();
+  if(e){
+    mood=e.mood;
+    document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',b.dataset.mood===e.mood));
+    document.getElementById('journalCard').classList.remove('show');
+    showEntry(e);
+  } else {
+    document.getElementById('todayEntry').classList.remove('show');
+    document.getElementById('journalCard').classList.remove('show');
+  }
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+// === Calendar ===
+let calYear, calMonth;
+(function(){
+  const now=new Date();
+  calYear=now.getFullYear();
+  calMonth=now.getMonth();
+})();
+
+function calNav(dir){
+  calMonth+=dir;
+  if(calMonth<0){calMonth=11;calYear--;}
+  if(calMonth>11){calMonth=0;calYear++;}
+  renderCal();
+}
+
+function renderCal(){
+  const entries=JSON.parse(localStorage.getItem('si_entries')||'{}');
+  const moodEmojis={happy:'😊',okay:'😐',tired:'😮‍💨',sad:'😢',angry:'😤'};
+  const today=new Date();
+  const todayStr=todayK();
+
+  // Title
+  document.getElementById('calTitle').textContent=t('cal_title');
+
+  // Month header
+  const monthNames=i18n[lang].cal_months;
+  document.getElementById('calMonth').textContent=`${monthNames[calMonth]} ${calYear}`;
+
+  // Weekday headers
+  const wdContainer=document.getElementById('calWeekdays');
+  wdContainer.innerHTML='';
+  const wdNames=i18n[lang].cal_weekdays;
+  wdNames.forEach(wd=>{
+    const el=document.createElement('div');
+    el.className='cal-wd';
+    el.textContent=wd;
+    wdContainer.appendChild(el);
+  });
+
+  // Grid
+  const grid=document.getElementById('calGrid');
+  grid.innerHTML='';
+
+  const firstDay=new Date(calYear,calMonth,1);
+  let startDow=firstDay.getDay()-1; // Mon=0
+  if(startDow<0) startDow=6;
+
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+
+  // Empty cells before month start
+  for(let i=0;i<startDow;i++){
+    const empty=document.createElement('div');
+    empty.className='cal-day cal-day--empty';
+    grid.appendChild(empty);
+  }
+
+  // Day cells
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const entry=entries[dateStr];
+    const isFuture=new Date(calYear,calMonth,d)>today;
+    const isToday=dateStr===todayStr;
+
+    const cell=document.createElement('div');
+    cell.className='cal-day';
+    if(isToday) cell.classList.add('cal-day--today');
+    if(isFuture) cell.classList.add('cal-day--future');
+    if(entry) cell.classList.add('cal-day--has-entry');
+
+    const num=document.createElement('div');
+    num.className='cal-day-num';
+    num.textContent=d;
+    cell.appendChild(num);
+
+    if(entry && entry.mood){
+      const emoji=document.createElement('div');
+      emoji.className='cal-day-emoji';
+      emoji.textContent=moodEmojis[entry.mood]||'';
+      cell.appendChild(emoji);
+    }
+
+    if(!isFuture){
+      cell.onclick=()=>showCalDetail(dateStr,entry);
+    }
+
+    grid.appendChild(cell);
+  }
+
+  // Hide detail when switching months
+  document.getElementById('calDetail').classList.remove('show');
+}
+
+let selectedCalDay=null;
+
+function showCalDetail(dateStr, entry){
+  const detail=document.getElementById('calDetail');
+  const moodEmojis={happy:'😊',okay:'😐',tired:'😮‍💨',sad:'😢',angry:'😤'};
+
+  // Highlight selected day
+  document.querySelectorAll('.cal-day--selected').forEach(el=>el.classList.remove('cal-day--selected'));
+  const days=document.querySelectorAll('.cal-day');
+  days.forEach(d=>{
+    const num=d.querySelector('.cal-day-num');
+    if(num){
+      const dayNum=parseInt(num.textContent);
+      const checkStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+      if(checkStr===dateStr) d.classList.add('cal-day--selected');
+    }
+  });
+
+  if(entry && entry.mood){
+    document.getElementById('calDetailEmoji').textContent=moodEmojis[entry.mood]||'';
+    document.getElementById('calDetailDate').textContent=dateStr;
+    document.getElementById('calDetailText').textContent=entry.text||'';
+    document.getElementById('calDetailText').className='cal-detail-text';
+  } else {
+    document.getElementById('calDetailEmoji').textContent='📝';
+    document.getElementById('calDetailDate').textContent=dateStr;
+    document.getElementById('calDetailText').textContent=t('cal_no_entry');
+    document.getElementById('calDetailText').className='cal-detail-empty';
+  }
+
+  detail.classList.add('show');
+  detail.style.animation='none';detail.offsetHeight;
+  detail.style.animation='fadeUp 0.3s ease-out';
+}
+
+// Update updateUI to also render calendar
+const _origUpdateUI = updateUI;
+
+setLang(lang);
+renderCal();
+</script>
+</body>
+</html>
